@@ -1,0 +1,10 @@
+name: reward_reset_simulation
+
+channels:
+  - cinda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  - numpy
+  - matplotlib
