@@ -1,75 +1,77 @@
-def print_results(results: dict) -> None:
+def print_trajectory_results(result, config):
+    print("=" * 60)
+    print("SINGLE TRAJECTORY RESULTS")
+    print("=" * 60)
 
-    print('=' * 70)
-    print('Results of Reward Reset Simulation')
-    print('=' * 70)
+    print(f"T                 : {config.T}")
+    print(f"K                 : {config.K}")
+    print(f"p = 1/K           : {config.p:.4f}")
+    print(f"Number of resets  : {result['reset_indicator'].sum()}")
 
-    print(f"T                = {results['T']}")
-    print(f"K                = {results['K']}")
-    print(f"p = 1/K          = {results['p']:.6f}")
-
-    print('-' * 70)
+    print()
 
     print(
-        f"sigma_d^2           = "
-        f"{results['sigma_d_squared']:.8f}"
-
-        f"\nLemma 3"
-    )
-    print(
-        f"Var(I_t d_t) empirical= "
-        f"{results['var_id_empirical']:.8f}"
+        f"Normal reward variance : "
+        f"{result['normal_variance']:.6f}"
     )
 
     print(
-        f"p * sigma_d^2          = "
-        f"{results['var_id_theoritical']}"
-    )
-
-    print('-' * 70)
-
-    print('Theorem 2')
-
-    print(
-        f"V_noreset              = "
-        f"{results['v_noreset']:.8f}"
+        f"Reset reward variance  : "
+        f"{result['reset_variance']:.6f}"
     )
 
     print(
-        f"V_reset empirical        = "
-        f"{results['v_reset_empirical']:.8f}"
+        f"Shock variance         : "
+        f"{result['shock_variance']:.6f}"
     )
 
-    print(
-        f"V_reset theoritical       = "
-        f"{results['v_reset_theoritical']}"
-    )
+    print("=" * 60)
 
-    print('-' * 70)
 
-    print(
-        f"Number of resets         = "
-        f"{results['number_of_resets']}"
-    )
+def print_multiple_results(results, config):
+    normal_variances = [
+        r["normal_variance"]
+        for r in results
+    ]
 
-    print(
-        f"V_reset / V_noreset         = "
-        f"{results['variance_ratio']:6f}"
-    )
+    reset_variances = [
+        r["reset_variance"]
+        for r in results
+    ]
 
-    print('-' * 70)
-
-    if results['v_reset_empirical'] > results['v_noreset']:
-        print(
-            'Result: Reset increases empirical reward'
+    shock_variances = [
+        r["shock_variance"]
+        for r in results
+        if not (
+            r["shock_variance"] != r["shock_variance"]
         )
-    elif results['v_reset_empirical'] < results['v_noreset']:
+    ]
+
+    print("=" * 60)
+    print("MULTIPLE TRAJECTORIES")
+    print("=" * 60)
+
+    print(f"Trajectories : {len(results)}")
+    print(f"T            : {config.T}")
+    print(f"K            : {config.K}")
+    print(f"p            : {config.p:.4f}")
+
+    print()
+
+    print(
+        f"Mean normal variance : "
+        f"{sum(normal_variances) / len(normal_variances):.6f}"
+    )
+
+    print(
+        f"Mean reset variance  : "
+        f"{sum(reset_variances) / len(reset_variances):.6f}"
+    )
+
+    if shock_variances:
         print(
-            f'Result: Reset decreases empirical reward variance'
-        )
-    else:
-        print(
-            f'Result: Both variance are approximately equal.'
+            f"Mean shock variance  : "
+            f"{sum(shock_variances) / len(shock_variances):.6f}"
         )
 
-    print('=' * 70)
+    print("=" * 60)
