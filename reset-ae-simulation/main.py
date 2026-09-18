@@ -1,24 +1,52 @@
-from src.config import simulationconfig
-from experiment import run_single_expriment
+from src.config import SimulationConfig
+
+from experiment import (
+    run_single_trajectory,
+    run_multiple_trajectories
+)
+
+from src.print_results import (
+    print_trajectory_results,
+    print_multiple_results
+)
+
+from src.plot_results import (
+    plot_single_trajectory,
+    plot_losses
+)
+
 
 def main():
 
-    config = simulationconfig(
-        T=1000,
-        K=50,
-        reward_mean=0.0,
-        reward_std=0.02,
-        reset_reward_mean=0.0,
-        reset_reward_std=0.50,
-        seed=42
+    config = SimulationConfig()
+
+    # ==================================================
+    # Single trajectory
+    # ==================================================
+
+    result = run_single_trajectory(config)
+
+    print_trajectory_results(
+        result,
+        config
+    )
+
+    plot_single_trajectory(result)
+    plot_losses(result)
+
+    # ==================================================
+    # Multiple trajectories
+    # ==================================================
+
+    results = run_multiple_trajectories(
+        config
+    )
+
+    print_multiple_results(
+        results,
+        config
     )
 
 
-    run_single_expriment(
-        config=config,
-        show_plots=True
-    )
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
