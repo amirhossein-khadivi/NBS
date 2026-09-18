@@ -1,112 +1,68 @@
-import numpy as np
 import matplotlib.pyplot as plt
 
-def plot_reward_trajectories(
-        normal_reward: np.ndarray,
-        reset_reward: np.ndarray
-) -> None:
+
+def plot_single_trajectory(result):
+    T = len(result["normal_reward"])
+    steps = range(T)
 
     plt.figure(figsize=(12, 5))
-    
-    plt.plot(
-        reset_reward,
-        label='With Reset'
-    )
 
     plt.plot(
-        normal_reward, 
-        label='No Reset'
+        steps,
+        result["normal_reward"],
+        label="Normal"
     )
 
-    plt.xlabel('Training Step')
-    plt.ylabel('Reward')
-
-    plt.title(
-        'Reward Trajectory: No Reset vs. Reset'
+    plt.plot(
+        steps,
+        result["reset_reward"],
+        label="With Reset"
     )
 
+    reset_points = [
+        i
+        for i, value in enumerate(result["reset_indicator"])
+        if value == 1
+    ]
+
+    for point in reset_points:
+        plt.axvline(
+            point,
+            linestyle="--",
+            alpha=0.4
+        )
+
+    plt.xlabel("Timestep")
+    plt.ylabel("Reward")
+    plt.title("Normal vs Reset Reward Trajectory")
     plt.legend()
-    plt.grid(alpha=0.3)
+    plt.grid(True)
 
-    plt.tight_layout()
     plt.show()
 
 
-def plot_reset_shocks(
-        reset_indicator: np.ndarray,
-        shock: np.ndarray
-) -> None:
+def plot_losses(result):
+    T = len(result["normal_ae_loss"])
+    steps = range(T)
 
-    reset_indices = np.where(
-        reset_indicator == 1
-    )[0]
+    plt.figure(figsize=(12, 5))
 
-    reset_shocks = shock[
-        reset_indicator == 1
-    ]
-
-    plt.figure(figsize=(12, 4))
-
-    plt.stem(
-        reset_indices,
-        reset_shocks,
-        basefmt=" "
+    plt.plot(
+        steps,
+        result["normal_ae_loss"],
+        label="Normal AE Loss"
     )
 
-    plt.axhline(
-        0,
-        linewidth=1
+    plt.plot(
+        steps,
+        result["reset_ae_loss"],
+        label="Reset AE Loss"
     )
 
-    plt.xlabel("Training Step")
-    plt.ylabel("d_t")
+    plt.xlabel("Timestep")
+    plt.ylabel("Autoencoder Loss")
+    plt.title("Autoencoder Loss Trajectory")
+    plt.legend()
+    plt.grid(True)
 
-    plt.title(
-        'Reward Shocks Caused by Reset'
-    )
-
-    plt.grid(alpha=0.3)
-
-    plt.tight_layout()
     plt.show()
-
-def plot_variance_comparison(
-        v_noreset: float,
-        v_reset_empirical: float,
-        v_reset_theoritical: float
-) -> None:
-
-    labels = [
-        'No Reset',
-        'Reset\n(Empirical)',
-        'Reset\n(Theoritical)'
-    ]
-
-    values = [
-        v_noreset,
-        v_reset_empirical,
-        v_reset_theoritical
-    ]
-
-    plt.figure(figsize=(8, 5))
-
-    plt.bar(
-        labels,
-        values
-    )
-
-    plt.ylabel('Reward Variance')
-
-    plt.title(
-        'Comparison of Reward Variance'
-    )
-
-    plt.grid(
-        axis='y',
-        alpha=0.3
-    )
-
-    plt.tight_layout()
-    plt.show()
-
-
