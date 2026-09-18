@@ -31,8 +31,13 @@ def main():
         config
     )
 
-    plot_single_trajectory(result)
-    plot_losses(result)
+    plot_single_trajectory(
+        result
+    )
+
+    plot_losses(
+        result
+    )
 
     # ==================================================
     # Multiple trajectories

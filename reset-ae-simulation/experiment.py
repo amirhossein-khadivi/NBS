@@ -15,6 +15,12 @@ from src.calculate_variance import (
     calculate_shock_variance
 )
 
+from src.calculate_theoretical import (
+    theoretical_var_indicator_shock,
+    theoretical_v_reset,
+    theoretical_v_reset_p_zero
+)
+
 
 def run_single_trajectory(config, seed=None):
 
@@ -23,18 +29,18 @@ def run_single_trajectory(config, seed=None):
 
     rng = np.random.default_rng(seed)
 
-    # ==================================================
-    # 1. Generate shared noise
-    # ==================================================
+    # --------------------------------------------------
+    # Shared stochastic noise
+    # --------------------------------------------------
 
     ae_noise, predictor_noise = generate_shared_noise(
         config,
         rng
     )
 
-    # ==================================================
-    # 2. Generate NORMAL trajectory
-    # ==================================================
+    # --------------------------------------------------
+    # Normal trajectory
+    # --------------------------------------------------
 
     (
         normal_ae_loss,
@@ -46,9 +52,9 @@ def run_single_trajectory(config, seed=None):
         predictor_noise
     )
 
-    # ==================================================
-    # 3. Generate reset indicators
-    # ==================================================
+    # --------------------------------------------------
+    # Reset indicator
+    # --------------------------------------------------
 
     reset_indicator = generate_reset_indicator(
         config.T,
@@ -56,9 +62,9 @@ def run_single_trajectory(config, seed=None):
         rng
     )
 
-    # ==================================================
-    # 4. Generate RESET trajectory
-    # ==================================================
+    # --------------------------------------------------
+    # Reset trajectory
+    # --------------------------------------------------
 
     (
         reset_ae_loss,
@@ -71,23 +77,19 @@ def run_single_trajectory(config, seed=None):
         predictor_noise
     )
 
-    # ==================================================
-    # 5. Calculate shock
-    # ==================================================
+    # --------------------------------------------------
+    # Reward shock
+    # --------------------------------------------------
 
-    shock = (
-        reset_reward
-        - normal_reward
-    )
+    shock = reset_reward - normal_reward
 
-    # Shock is meaningful at reset points
     reset_shocks = shock[
         reset_indicator == 1
     ]
 
-    # ==================================================
-    # 6. Variance
-    # ==================================================
+    # --------------------------------------------------
+    # Empirical variances
+    # --------------------------------------------------
 
     normal_variance = calculate_variance(
         normal_reward
@@ -101,39 +103,68 @@ def run_single_trajectory(config, seed=None):
         reset_shocks
     )
 
+    # --------------------------------------------------
+    # Theoretical quantities
+    # --------------------------------------------------
+
+    theoretical_shock_variance = (
+        theoretical_var_indicator_shock(
+            config.p,
+            shock_variance
+        )
+    )
+
+    theoretical_reset_variance = (
+        theoretical_v_reset(
+            config.p,
+            normal_variance,
+            shock_variance
+        )
+    )
+
+    theoretical_reset_variance_p_zero = (
+        theoretical_v_reset_p_zero(
+            normal_variance
+        )
+    )
+
+    # --------------------------------------------------
+    # Return everything
+    # --------------------------------------------------
+
     return {
 
-        # ------------------------------
         # Normal trajectory
-        # ------------------------------
-
         "normal_ae_loss": normal_ae_loss,
         "normal_predictor_loss": normal_predictor_loss,
         "normal_reward": normal_reward,
 
-        # ------------------------------
         # Reset trajectory
-        # ------------------------------
-
         "reset_ae_loss": reset_ae_loss,
         "reset_predictor_loss": reset_predictor_loss,
         "reset_reward": reset_reward,
 
-        # ------------------------------
         # Reset information
-        # ------------------------------
-
         "reset_indicator": reset_indicator,
+
+        # Shock
         "shock": shock,
         "reset_shocks": reset_shocks,
 
-        # ------------------------------
-        # Statistics
-        # ------------------------------
-
+        # Empirical results
         "normal_variance": normal_variance,
         "reset_variance": reset_variance,
         "shock_variance": shock_variance,
+
+        # Theoretical results
+        "theoretical_shock_variance":
+            theoretical_shock_variance,
+
+        "theoretical_reset_variance":
+            theoretical_reset_variance,
+
+        "theoretical_reset_variance_p_zero":
+            theoretical_reset_variance_p_zero
     }
 
 
