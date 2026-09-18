@@ -1,32 +1,42 @@
 import numpy as np
 
-def calculate_variance(values: np.ndarray) -> float:
 
-    return float(np.var(values, ddof=1))
+def calculate_variance(values):
+    """
+    Calculate sample variance.
+    """
+
+    return np.var(
+        values,
+        ddof=1
+    )
 
 
-def calculate_sigma_d_squared(
-        shock: np.ndarray
-) -> float:
+def calculate_shock_variance(shocks):
+    """
+    Calculate variance of reset shocks.
+    """
 
-    return calculate_variance(shock)
+    if len(shocks) < 2:
+        return np.nan
 
-def calculate_var_indicator_shock(
-        reset_indicator: np.ndarray,
-        shock: np.ndarray
-) -> float:
+    return np.var(
+        shocks,
+        ddof=1
+    )
 
-    shock_component = reset_indicator * shock
 
-    return calculate_variance(shock_component)
+def calculate_mean_variance(
+    results,
+    key
+):
+    """
+    Calculate mean variance across trajectories.
+    """
 
-def calculate_v_noreset(
-        normal_reward: np.ndarray
-) -> float:
-    
-    return calculate_variance(normal_reward)
+    variances = [
+        result[key]
+        for result in results
+    ]
 
-def calculate_v_reset(
-        reset_reward: np.ndarray, 
-) -> float:
-    return calculate_variance(reset_reward)
+    return np.mean(variances)
