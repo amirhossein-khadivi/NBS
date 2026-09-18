@@ -1,22 +1,28 @@
 from dataclasses import dataclass
 
+
 @dataclass
-class simulationconfig:
-
+class SimulationConfig:
+    # Trajectory
     T: int = 1000
-
     K: int = 50
+    n_trajectories: int = 100
 
-    reward_mean: float = 0.0
+    # Autoencoder loss
+    initial_ae_loss: float = 1.0
+    minimum_ae_loss: float = 0.01
+    learning_rate: float = 0.005
 
-    reward_std: float = 0.02
+    # Noise
+    ae_noise_std: float = 0.01
+    predictor_noise_std: float = 0.01
 
-    reset_reward_mean: float = 0.0
+    # Predictor
+    beta: float = 0.8
 
-    reset_reward_std: float = 0.50
-
+    # Reproducibility
     seed: int = 42
 
     @property
-    def p(self) -> float:
+    def p(self):
         return 1.0 / self.K
