@@ -1,198 +1,153 @@
 import numpy as np
 
-from src.config import simulationconfig
-
-from src.generate_reward import (
-    generate_normal_reward
-)
-
-from src.generate_shock import (
-    generate_reset_reward,
-    generate_shok
+from src.generate_trajectory import (
+    generate_shared_noise,
+    generate_normal_trajectory
 )
 
 from src.generate_reset import (
     generate_reset_indicator,
-    generat_reset_reward_path
+    generate_reset_trajectory
 )
 
 from src.calculate_variance import (
-    calculate_sigma_d_squared,
-    calculate_var_indicator_shock,
-    calculate_v_reset,
-    calculate_v_noreset
+    calculate_variance,
+    calculate_shock_variance
 )
 
-from src.calculate_theoritical import (
-    theoritical_v_reset,
-    theoritical_var_indicator_shock
-)
 
-from src.print_results import print_results
+def run_single_trajectory(config, seed=None):
 
-from src.plot_results import (
-    plot_reward_trajectories,
-    plot_reset_shocks,
-    plot_variance_comparison
-)
+    if seed is None:
+        seed = config.seed
 
-def run_single_expriment(
-        config: simulationconfig,
-        show_plots: bool = True
-) -> dict:
+    rng = np.random.default_rng(seed)
 
-    rng = np.random.default_rng(
-        config.seed
+    # ==================================================
+    # 1. Generate shared noise
+    # ==================================================
+
+    ae_noise, predictor_noise = generate_shared_noise(
+        config,
+        rng
     )
 
-    normal_reward = generate_normal_reward(
-        T=config.T,
-        mean=config.reward_mean,
-        std=config.reward_std,
-        rng=rng
+    # ==================================================
+    # 2. Generate NORMAL trajectory
+    # ==================================================
+
+    (
+        normal_ae_loss,
+        normal_predictor_loss,
+        normal_reward
+    ) = generate_normal_trajectory(
+        config,
+        ae_noise,
+        predictor_noise
     )
 
-    reset_reward = generate_reset_reward(
-        T=config.T,
-        mean=config.reset_reward_mean,
-        std=config.reset_reward_std,
-        rng=rng
-    )
-
-    shock = generate_shok(
-        normal_reward=normal_reward,
-        reset_reward=reset_reward
-    )
+    # ==================================================
+    # 3. Generate reset indicators
+    # ==================================================
 
     reset_indicator = generate_reset_indicator(
-        T=config.T,
-        p=config.p,
-        rng=rng
+        config.T,
+        config.p,
+        rng
     )
 
-    reset_reward_path = generat_reset_reward_path(
-        normal_reward=normal_reward,
-        shock=shock,
-        reset_indicator=reset_indicator
-    )
+    # ==================================================
+    # 4. Generate RESET trajectory
+    # ==================================================
 
-    sigma_d_squared = calculate_sigma_d_squared(
-        shock
-    )
-
-    var_id_empirical = calculate_var_indicator_shock(
+    (
+        reset_ae_loss,
+        reset_predictor_loss,
+        reset_reward
+    ) = generate_reset_trajectory(
+        config,
         reset_indicator,
-        shock
+        ae_noise,
+        predictor_noise
     )
 
-    v_noreset = calculate_v_noreset(
+    # ==================================================
+    # 5. Calculate shock
+    # ==================================================
+
+    shock = (
+        reset_reward
+        - normal_reward
+    )
+
+    # Shock is meaningful at reset points
+    reset_shocks = shock[
+        reset_indicator == 1
+    ]
+
+    # ==================================================
+    # 6. Variance
+    # ==================================================
+
+    normal_variance = calculate_variance(
         normal_reward
     )
 
-    v_reset_empirical = calculate_v_reset(
-        reset_reward_path
+    reset_variance = calculate_variance(
+        reset_reward
     )
 
-    var_id_theorotical = theoritical_var_indicator_shock(
-        p=config.p,
-        sigma_d_squared=sigma_d_squared, 
+    shock_variance = calculate_shock_variance(
+        reset_shocks
     )
 
-    v_reset_theoritical = theoritical_v_reset(
-        p=config.p,
-        v_noreset=v_noreset,
-        sigma_d_squared=sigma_d_squared
-    )
+    return {
 
-    results = {
-        'T': config.T,
-        'K': config.K,
-        'p': config.p,
+        # ------------------------------
+        # Normal trajectory
+        # ------------------------------
 
-        'sigma_d_squared': sigma_d_squared,
+        "normal_ae_loss": normal_ae_loss,
+        "normal_predictor_loss": normal_predictor_loss,
+        "normal_reward": normal_reward,
 
-        'var_id_empirical': var_id_empirical,
-        'var_id_theoritical': var_id_theorotical,
+        # ------------------------------
+        # Reset trajectory
+        # ------------------------------
 
-        'v_noreset': v_noreset,
+        "reset_ae_loss": reset_ae_loss,
+        "reset_predictor_loss": reset_predictor_loss,
+        "reset_reward": reset_reward,
 
-        'v_reset_empirical': v_reset_empirical,
-        'v_reset_theoritical': v_reset_theoritical,
+        # ------------------------------
+        # Reset information
+        # ------------------------------
 
-        'variance_ratio': (
-            v_reset_empirical / v_noreset
-        ),
+        "reset_indicator": reset_indicator,
+        "shock": shock,
+        "reset_shocks": reset_shocks,
 
-        'number_of_resets': int(
-            np.sum(reset_indicator)
-        ),
+        # ------------------------------
+        # Statistics
+        # ------------------------------
 
-        'normal_reward': normal_reward,
-        'reset_reward': reset_reward_path,
-        'shock': shock,
-        'reset_indicator': reset_indicator
+        "normal_variance": normal_variance,
+        "reset_variance": reset_variance,
+        "shock_variance": shock_variance,
     }
 
 
-    print_results(results=results)
+def run_multiple_trajectories(config):
 
-    if show_plots:
+    results = []
 
-        plot_reward_trajectories(
-            normal_reward,
-            reset_reward_path
+    for i in range(config.n_trajectories):
+
+        result = run_single_trajectory(
+            config,
+            seed=config.seed + i
         )
 
-        plot_reset_shocks(
-            reset_indicator,
-            shock
-        )
-
-        plot_variance_comparison(
-            v_noreset,
-            v_reset_empirical,
-            v_reset_theoritical
-        )
+        results.append(result)
 
     return results
-
-def run_multiple_expriments(
-        K_values=(10, 20, 50, 100),
-        repetitions=100,
-        T=1000,
-        reward_std=0.02,
-        reset_reward_std=0.50,
-        seed=42
-) -> list:
-
-    all_results = []
-
-    for k in K_values:
-
-        for repetition in range(repetitions):
-
-            config = simulationconfig(
-                T=T,
-                K=k,
-                reward_std=reward_std,
-                reset_reward_std=reset_reward_std,
-                seed=seed + repetition
-            )
-
-            results = run_single_expriment(
-                config=config,
-                show_plots=False
-            )
-
-            all_results.append({
-                'K': k,
-                'p': config.p,
-                'repetition': repetition,
-                'V_noreset': results['v_noreset'],
-                'V_reset': results['v_reset_empirical'],
-                'Sigma_d_squared': results['sigma_d_squared'],
-                'Var_id_empirical': results['var_id_empirical'],
-                'Var_id_theoritical':results['var_id_theoritical']
-            })
-
-    return all_results
