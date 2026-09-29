@@ -20,6 +20,10 @@ class SimulationConfig:
     # Predictor
     beta: float = 0.8
 
+    # Stabilization criterion
+    stabilization_window: int = 50
+    stabilization_epsilon: float = 0.01
+
     # Reproducibility
     seed: int = 42
 

@@ -3,9 +3,6 @@ import numpy as np
 
 
 def plot_ae_loss(result):
-    """
-    Plot Autoencoder Loss for normal and reset trajectories.
-    """
 
     T = len(result["normal_ae_loss"])
     steps = np.arange(T)
@@ -35,6 +32,13 @@ def plot_ae_loss(result):
             alpha=0.25
         )
 
+    plt.axvline(
+        result["stabilization_time"],
+        linestyle=":",
+        linewidth=2,
+        label=r"$T^*$"
+    )
+
     plt.xlabel("Timestep")
     plt.ylabel("Autoencoder Loss")
     plt.title("Autoencoder Loss: Normal vs Reset")
@@ -47,9 +51,6 @@ def plot_ae_loss(result):
 
 
 def plot_predictor_loss(result):
-    """
-    Plot Predictor Loss for normal and reset trajectories.
-    """
 
     T = len(result["normal_predictor_loss"])
     steps = np.arange(T)
@@ -79,6 +80,13 @@ def plot_predictor_loss(result):
             alpha=0.25
         )
 
+    plt.axvline(
+        result["stabilization_time"],
+        linestyle=":",
+        linewidth=2,
+        label=r"$T^*$"
+    )
+
     plt.xlabel("Timestep")
     plt.ylabel("Predictor Loss")
     plt.title("Predictor Loss: Normal vs Reset")
@@ -91,9 +99,6 @@ def plot_predictor_loss(result):
 
 
 def plot_reward(result):
-    """
-    Plot Reward for normal and reset trajectories.
-    """
 
     T = len(result["normal_reward"])
     steps = np.arange(T)
@@ -123,6 +128,13 @@ def plot_reward(result):
             alpha=0.25
         )
 
+    plt.axvline(
+        result["stabilization_time"],
+        linestyle=":",
+        linewidth=2,
+        label=r"$T^*$"
+    )
+
     plt.xlabel("Timestep")
     plt.ylabel("Reward")
     plt.title("Reward: Normal vs Reset")
@@ -135,11 +147,6 @@ def plot_reward(result):
 
 
 def plot_reward_shock(result):
-    """
-    Plot reward shock:
-
-        D_t = R_t^reset - R_t^normal
-    """
 
     T = len(result["shock"])
     steps = np.arange(T)
@@ -165,6 +172,13 @@ def plot_reward_shock(result):
             alpha=0.25
         )
 
+    plt.axvline(
+        result["stabilization_time"],
+        linestyle=":",
+        linewidth=2,
+        label=r"$T^*$"
+    )
+
     plt.axhline(
         0.0,
         linestyle="-",
@@ -183,29 +197,24 @@ def plot_reward_shock(result):
 
 
 def plot_variance_comparison(result):
-    """
-    Compare empirical and theoretical variance quantities.
-    """
 
     labels = [
         "Normal Variance",
         "Reset Variance\n(Empirical)",
         "Reset Variance\n(Theoretical)",
-        "Shock Variance\n(Empirical)",
-        "Shock Variance\n(Theoretical)"
+        "Composite Shock\nVariance"
     ]
 
     values = [
         result["normal_variance"],
         result["reset_variance"],
         result["theoretical_reset_variance"],
-        result["shock_variance"],
         result["theoretical_shock_variance"]
     ]
 
     x = np.arange(len(labels))
 
-    plt.figure(figsize=(11, 6))
+    plt.figure(figsize=(10, 6))
 
     plt.bar(
         x,
@@ -230,9 +239,6 @@ def plot_variance_comparison(result):
 
 
 def plot_all_results(result):
-    """
-    Generate all five plots.
-    """
 
     plot_ae_loss(result)
 
