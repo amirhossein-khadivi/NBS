@@ -12,11 +12,13 @@ from src.generate_reset import (
 
 from src.calculate_variance import (
     calculate_variance,
-    calculate_shock_variance
+    calculate_shock_statistics,
+    find_stabilization_time
 )
 
 from src.calculate_theoretical import (
     theoretical_var_indicator_shock,
+    theoretical_mean_shift,
     theoretical_v_reset,
     theoretical_v_reset_p_zero
 )
@@ -53,6 +55,19 @@ def run_single_trajectory(config, seed=None):
     )
 
     # --------------------------------------------------
+    # Stabilization point T*
+    # --------------------------------------------------
+
+    stabilization_time = find_stabilization_time(
+        normal_ae_loss,
+        config.stabilization_window,
+        config.stabilization_epsilon
+    )
+
+    if stabilization_time is None:
+        stabilization_time = 0
+
+    # --------------------------------------------------
     # Reset indicator
     # --------------------------------------------------
 
@@ -83,8 +98,16 @@ def run_single_trajectory(config, seed=None):
 
     shock = reset_reward - normal_reward
 
-    reset_shocks = shock[
-        reset_indicator == 1
+    # --------------------------------------------------
+    # Stable-regime data
+    # --------------------------------------------------
+
+    normal_reward_stable = normal_reward[
+        stabilization_time:
+    ]
+
+    reset_reward_stable = reset_reward[
+        stabilization_time:
     ]
 
     # --------------------------------------------------
@@ -92,25 +115,43 @@ def run_single_trajectory(config, seed=None):
     # --------------------------------------------------
 
     normal_variance = calculate_variance(
-        normal_reward
+        normal_reward_stable
     )
 
     reset_variance = calculate_variance(
-        reset_reward
+        reset_reward_stable
     )
 
-    shock_variance = calculate_shock_variance(
-        reset_shocks
+    # --------------------------------------------------
+    # Shock statistics
+    # --------------------------------------------------
+
+    (
+        mu_d,
+        sigma_d_squared,
+        n_reset_events
+    ) = calculate_shock_statistics(
+        shock,
+        reset_indicator,
+        start=stabilization_time
     )
 
     # --------------------------------------------------
     # Theoretical quantities
     # --------------------------------------------------
 
+    theoretical_mean_shift_value = (
+        theoretical_mean_shift(
+            config.p,
+            mu_d
+        )
+    )
+
     theoretical_shock_variance = (
         theoretical_var_indicator_shock(
             config.p,
-            shock_variance
+            mu_d,
+            sigma_d_squared
         )
     )
 
@@ -118,7 +159,8 @@ def run_single_trajectory(config, seed=None):
         theoretical_v_reset(
             config.p,
             normal_variance,
-            shock_variance
+            mu_d,
+            sigma_d_squared
         )
     )
 
@@ -147,16 +189,25 @@ def run_single_trajectory(config, seed=None):
         # Reset information
         "reset_indicator": reset_indicator,
 
+        # Stabilization
+        "stabilization_time": stabilization_time,
+
         # Shock
         "shock": shock,
-        "reset_shocks": reset_shocks,
+
+        # Stable-regime shock statistics
+        "mu_d": mu_d,
+        "sigma_d_squared": sigma_d_squared,
+        "n_reset_events": n_reset_events,
 
         # Empirical results
         "normal_variance": normal_variance,
         "reset_variance": reset_variance,
-        "shock_variance": shock_variance,
 
         # Theoretical results
+        "theoretical_mean_shift":
+            theoretical_mean_shift_value,
+
         "theoretical_shock_variance":
             theoretical_shock_variance,
 
