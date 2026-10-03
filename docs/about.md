@@ -4,11 +4,20 @@ title: About
 permalink: /about/
 ---
 
-# About
+---
 
-## Amirhossein Khadivi
+<div class="profile-header">
+  <img
+    src="https://github.com/amirhossein-khadivi.png"
+    alt="Amirhossein Khadivi"
+    class="profile-photo"
+  >
 
-**Statistician & Researcher**
+  <h1>Amirhossein Khadivi</h1>
+  <p class="profile-role">Statistician & Researcher</p>
+</div>
+
+---
 
 I am a statistician and researcher with an academic background in statistics and data science. I received my bachelor's degree in **Statistics from the University of Guilan** and my master's degree in **Data Science from the University of Tehran**.
 
@@ -65,9 +74,9 @@ The complete methodology, experimental results, implementation details, and theo
 
 I would like to acknowledge my master's thesis advisors for their guidance and support throughout this research:
 
-- **[Abdollah Safari](https://scholar.google.com/citations?user=cuX6eCMAAAAJ&hl=en)**
-- **[Firoozeh Haghighi](https://scholar.google.com/citations?hl=en&user=JO2wIwsAAAAJ)**
-- **[Fatemeh Ziaeetabar](https://scholar.google.com/citations?hl=en&user=QxfijdkAAAAJ)**
+- **[Dr. Abdollah Safari](https://scholar.google.com/citations?user=cuX6eCMAAAAJ&hl=en)**
+- **[Dr. Firoozeh Haghighi](https://scholar.google.com/citations?hl=en&user=JO2wIwsAAAAJ)**
+- **[Dr. Fatemeh Ziaeetabar](https://scholar.google.com/citations?hl=en&user=QxfijdkAAAAJ)**
 
 ---
 
