@@ -1,3 +1,19 @@
-theme: jekyll-theme-cayman
-title: NBS — Neural Batch Sampling
-description: DRL-Guided Anomaly Detection on MVTec AD
+title: Neural Batch Sampling (NBS)
+
+description: >
+  Neural Batch Sampling with Reinforcement Learning
+  for Semi-Supervised Industrial Anomaly Detection
+
+url: "https://amirhossein-khadivi.github.io"
+baseurl: "/NBS"
+
+markdown: kramdown
+highlighter: rouge
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
