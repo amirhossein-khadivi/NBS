@@ -1,194 +1,144 @@
-<div align="center">
-
 # Neural Batch Sampling (NBS)
 
-### Reinforcement Learning for Semi-Supervised Industrial Anomaly Detection
+## Neural Batch Sampling with Reinforcement Learning for Semi-Supervised Industrial Anomaly Detection
 
-<p>
-  <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Reinforcement%20Learning-6A5ACD?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Computer%20Vision-007ACC?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Anomaly%20Detection-FF6F00?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
-</p>
+Neural Batch Sampling (NBS) is a reinforcement-learning-based framework for intelligent spatial sampling in industrial image anomaly detection.
 
-<p>
-  <b>Neural Batch Sampling</b> learns where to look in an industrial image
-  using reinforcement learning, enabling adaptive patch selection instead of
-  relying solely on random or uniform sampling.
-</p>
-
-</div>
+Instead of treating image regions uniformly, NBS learns to navigate through an image and select informative patches using a neural sampling policy. The selected regions are evaluated through reconstruction and anomaly-prediction signals, while the sampling policy is optimized using a composite reward.
 
 ---
 
-## 📌 Overview
+## Project Overview
 
-Industrial anomaly detection often requires identifying subtle defects that may occupy only a small portion of an image.
-A major challenge is therefore not only **how to detect anomalies**, but also **where to inspect the image**.
+Industrial anomaly detection often requires identifying subtle and spatially localized defects.
 
-**Neural Batch Sampling (NBS)** addresses this problem by formulating patch selection as a sequential decision-making problem.
+A conventional approach may process the entire image uniformly or rely on predefined sampling strategies. NBS formulates spatial patch selection as a sequential decision-making problem.
 
-Instead of sampling image regions independently, an RL agent observes a structured state representation and learns to move through the image toward informative regions.
+At each step, the agent:
 
-The framework combines:
+1. Observes the current image state.
+2. Incorporates reconstruction and structural information.
+3. Selects one of nine spatial actions.
+4. Moves the sampling window.
+5. Extracts a candidate patch.
+6. Evaluates the selected region using the anomaly-detection pipeline.
+7. Receives a reward.
+8. Updates the sampling policy.
 
-- 🧠 Neural patch sampling
-- 🎯 Reinforcement learning
-- 🔍 Reconstruction-error information
-- 📐 Structural information
-- 📊 Coverage-based exploration
-- 🤖 Predictor feedback
-- 🏭 Industrial anomaly detection
+The overall process is designed to learn which image regions are more informative for anomaly detection.
 
 ---
 
-# 🧩 Method at a Glance
+## Research Website
 
-<div align="center">
+A complete research-oriented presentation of the project is available through the GitHub Pages website.
 
-<img src="Diagrams/overview_flowchart.jpg" width="900"/>
+**Website:**
 
-**Figure 1. Overview of the Neural Batch Sampling framework.**
+https://amirhossein-khadivi.github.io/NBS/
 
-</div>
+The website contains:
 
-The overall process can be summarized as:
+- Project Overview
+- Method
+- Results
+- Experiments
+- Code
+- Theoretical Analysis
+
+---
+
+## Method
+
+The NBS framework combines several components:
 
 ```text
-Industrial Image
-      │
-      ▼
-Preprocessing
-      │
-      ▼
+Input Image
+     │
+     ▼
+Image Preprocessing
+     │
+     ▼
 Autoencoder Reconstruction
-      │
-      ▼
+     │
+     ▼
 Reconstruction / Structural Information
-      │
-      ▼
+     │
+     ▼
 State Construction
-      │
-      ▼
-┌─────────────────────────────┐
-│   Neural Batch Sampler      │
-│                             │
-│   State → Policy → Action   │
-└─────────────────────────────┘
-      │
-      ▼
-Patch Selection
-      │
-      ▼
-Predictor Feedback
-      │
-      ▼
-Reward
-      │
-      └──────────────► Next State
+     │
+     ▼
+Neural Batch Sampler
+     │
+     ▼
+Action Selection
+     │
+     ▼
+Patch Extraction
+     │
+     ▼
+Anomaly Predictor
+     │
+     ▼
+Reward Computation
+     │
+     ▼
+Policy Update
+     │
+     └──────────────► Next Sampling Step
 ```
 
-The agent therefore learns a **sampling policy** rather than directly performing anomaly classification.
+The sampling policy therefore learns a sequential strategy for selecting informative image regions.
 
 ---
 
-# 🔬 Why Neural Batch Sampling?
+## Neural Batch Sampler
 
-Traditional patch-based anomaly detection pipelines often rely on predefined sampling strategies such as:
+The main sampler is initialized with:
 
-- Random sampling
-- Uniform grid sampling
-- Fixed patch locations
-- Hand-crafted heuristics
+```python
+NeuralBatchSampler(
+    input_size=900,
+    crop_size=128,
+    patch_size=64,
+    move_size=24,
+    action_space=9
+)
+```
 
-These approaches do not explicitly learn which regions are informative for the downstream anomaly-detection task.
+The main spatial parameters are:
 
-NBS instead treats image exploration as an RL problem:
-
-> **Given the current visual state, which spatial action should be taken next to obtain a more informative patch?**
-
-This allows the sampling process to adapt to the structure and anomaly-related information present in the image.
-
----
-
-# 🏗️ Model Architecture
-
-<div align="center">
-
-<img src="Diagrams/detail_flowchart.jpg" width="950"/>
-
-**Figure 2. Detailed NBS processing pipeline.**
-
-</div>
-
-The neural batch sampler receives a multi-channel state representation and predicts one of nine possible spatial actions.
-
-### Core configuration
-
-| Component             |          Configuration |
-| --------------------- | ---------------------: |
-| Input state channels  |                      6 |
-| Input spatial size    |              128 × 128 |
-| Selected patch size   |                64 × 64 |
-| Movement step         |              24 pixels |
-| Number of actions     |                      9 |
-| First convolution     |                 6 → 16 |
-| Second convolution    |                16 → 32 |
-| Third convolution     |                32 → 32 |
-| Fourth convolution    |                32 → 64 |
-| Fifth convolution     |                64 → 64 |
-| Fully connected layer |                    256 |
-| Output                | 9 action probabilities |
-| Normalization         |    Batch Normalization |
-| Policy output         |                Softmax |
+| Parameter      |     Value |
+| -------------- | --------: |
+| Input size     |       900 |
+| Crop size      | 128 × 128 |
+| Patch size     |   64 × 64 |
+| Movement size  | 24 pixels |
+| Action space   |         9 |
+| State channels |         6 |
 
 ---
 
-# 🧠 State Representation
+## State Representation
 
-The agent does not make decisions from RGB information alone.
+The NBS agent receives a multi-channel state containing visual and reconstruction-related information.
 
-The state incorporates visual and error-related information that describes the current region and its surrounding context.
+The state incorporates information such as:
 
-<div align="center">
-
-<img src="Diagrams/nbs_state_schematic.jpg" width="850"/>
-
-**Figure 3. State representation used by the Neural Batch Sampler.**
-
-</div>
-
-The state representation contains six channels combining information such as:
-
-- RGB appearance
+- RGB image information
 - Reconstruction-error information
 - Structural information
+- Statistical information
 - Previous error information
 - Historical sampling information
 
-This representation allows the policy to use both **appearance** and **sampling history** when selecting the next region.
+This multi-source representation allows the policy to make spatial decisions using both image appearance and reconstruction behavior.
 
 ---
 
-# 🎯 Action Space
+## Action Space
 
-NBS uses a discrete nine-action spatial policy.
-
-```text
-              UP
-               ↑
-
-        ↖      ↑      ↗
-
-        ←     STAY     →
-
-        ↙      ↓      ↘
-
-              DOWN
-```
-
-The nine actions are:
+The sampler uses nine spatial actions:
 
 | Action | Movement    |
 | -----: | ----------- |
@@ -197,178 +147,264 @@ The nine actions are:
 |      2 | Right       |
 |      3 | Up          |
 |      4 | Down        |
-|      5 | Up-Left     |
-|      6 | Down-Left   |
-|      7 | Up-Right    |
-|      8 | Down-Right  |
+|      5 | Up-left     |
+|      6 | Down-left   |
+|      7 | Up-right    |
+|      8 | Down-right  |
 
-Each movement changes the sampling location by the predefined movement step.
+The movement step is 24 pixels and the selected patch has a spatial size of 64 × 64 pixels.
 
 ---
 
-# 🎁 Reward Design
+## Neural Sampler Architecture
 
-The sampling policy is optimized using a composite reward:
+The main convolutional architecture follows:
 
-$$
-R_{\text{total}}
+```text
+Input: 6 channels
+       │
+       ▼
+Conv 6 → 16
+       │
+       ▼
+Conv 16 → 32
+       │
+       ▼
+Conv 32 → 32
+       │
+       ▼
+Conv 32 → 64
+       │
+       ▼
+Conv 64 → 64
+       │
+       ▼
+Flatten
+       │
+       ▼
+FC 64×4×4 → 256
+       │
+       ▼
+FC 256 → 9
+```
+
+The final layer produces one output for each available spatial action.
+
+---
+
+## Reconstruction and Anomaly Prediction
+
+An autoencoder is used to reconstruct the input image and generate spatial reconstruction-error information.
+
+A separate predictor network processes the available anomaly-related information.
+
+The predictor is configured as:
+
+```python
+Predictor(input_channels=10)
+```
+
+with the following channel progression:
+
+```text
+10 → 32 → 16 → 8 → 4 → 1
+```
+
+Dilated convolutions are used to preserve spatial information while increasing the effective receptive field.
+
+---
+
+## Fused Anomaly Signal
+
+The implementation combines multiple normalized signals:
+
+\[
+F
 =
-\beta
-\left(
-R_{\text{clone}}
-+
-R_{\text{cover}}
-\right)
-+
-(1-\beta)R_{\text{pred}}
-$$
+0.7\,MAE_z
+
+- 0.1\,Var_z
+- 0.2\,Grad_z
+  \]
 
 where:
 
-- $R_{\text{clone}}$ provides structural / image-information feedback.
-- $R_{\text{cover}}$ encourages exploration of previously insufficiently covered regions.
-- $R_{\text{pred}}$ incorporates feedback from the anomaly predictor.
-- $\beta$ controls the relative contribution of the sampling-related reward components.
+- \(MAE_z\) represents normalized reconstruction error,
+- \(Var_z\) represents normalized local variance,
+- \(Grad_z\) represents normalized gradient information.
 
-This formulation allows the agent to balance **informative sampling**, **spatial coverage**, and **downstream prediction feedback**.
-
----
-
-# 🔍 Information Used for Sampling
-
-The framework combines several sources of information.
-
-### Reconstruction Error
-
-An autoencoder reconstructs the input image, and reconstruction discrepancies provide information that can be useful for identifying potentially anomalous regions.
-
-### Structural Information
-
-Sobel-based structural information is extracted from the image to capture local edge and texture characteristics.
-
-### Fused Anomaly Signal
-
-The implementation combines normalized reconstruction and structural statistics through a weighted formulation:
-
-$$
-F =
-0.7\,MAE_z
-+
-0.1\,Var_z
-+
-0.2\,Grad_z
-$$
-
-followed by normalization.
-
-This signal contributes to the state and sampling process.
+The resulting signal is normalized using min–max normalization.
 
 ---
 
-# 📊 Experimental Results
+## Reward Function
 
-The repository contains experiments across **object** and **texture** categories, together with scenario-level training and evaluation results.
+The sampling policy is optimized using a composite reward:
 
-## Overall Results
+\[
+R*{\text{total}}
+=
+\beta(R*{\text{clone}}+R\_{\text{cover}})
 
-<div align="center">
+- (1-\beta)R\_{\text{pred}}
+  \]
 
-<img src="Resultes/Overall/ACC_Distribution_Across_overall.png" width="700"/>
+The reward combines sampling-related and prediction-related objectives.
 
-**Figure 4. Accuracy distribution across the overall experiments.**
+This allows the policy to consider both the characteristics of the selected regions and their contribution to anomaly prediction.
 
-<br>
+---
 
-<img src="Resultes/Overall/AUC_Distribution_Across_overall.png" width="700"/>
+## Experimental Evaluation
 
-**Figure 5. AUC distribution across the overall experiments.**
+The repository contains several levels of experimental analysis.
 
-<br>
+### Overall Evaluation
 
-<img src="Resultes/Overall/F1_Distribution_Across_overall.png" width="700"/>
+The overall experiments include:
 
-**Figure 6. F1 distribution across the overall experiments.**
+- Accuracy
+- AUC
+- F1-score
+- BCE
+- Weighted BCE
 
-</div>
-
-Additional overall analyses are available in:
+Results are available under:
 
 ```text
 Resultes/Overall/
-├── BCE_Across_overall.png
-├── Weighted_BCE_Across_overall.png
-├── BCE_Across_obj_vs_texture.png
-├── Weighted_BCE_Across_obj_vs_texture.png
-├── ACC_Distribution_Across_overall.png
-├── AUC_Distribution_Across_overall.png
-└── F1_Distribution_Across_overall.png
 ```
 
----
+### Object-level Evaluation
 
-# 🏭 Object vs. Texture Analysis
-
-NBS experiments include separate analyses for object-oriented and texture-oriented scenarios.
-
-<div align="center">
-
-<img src="Resultes/Overall/BCE_Across_obj_vs_texture.png" width="800"/>
-
-**Figure 7. BCE comparison across object and texture scenarios.**
-
-<br>
-
-<img src="Resultes/Overall/Weighted_BCE_Across_obj_vs_texture.png" width="800"/>
-
-**Figure 8. Weighted BCE comparison across object and texture scenarios.**
-
-</div>
-
-Detailed category-level results are available under:
+Object-oriented scenarios are analyzed separately under:
 
 ```text
 Resultes/Overall/Objects/
+```
+
+### Texture-level Evaluation
+
+Texture-oriented scenarios are analyzed separately under:
+
+```text
 Resultes/Overall/Textures/
 ```
 
+### Scenario-level Evaluation
+
+Detailed analyses for individual industrial scenarios are available under:
+
+```text
+Resultes/Senarioes/
+```
+
+These experiments include training curves, loss–metric relationships, correlation analyses, and sample-level comparisons.
+
 ---
 
-# 📈 Training Dynamics
+## Experimental Analyses
 
-The repository also contains scenario-level visualizations showing how the models evolve during training.
-
-For example, individual scenarios include:
+Scenario-level experiments include outputs such as:
 
 ```text
 autoencoder_losses_over_training.png
 prediction_losses_over_training.png
 metrics_over_training.png
+
 losspred_vs_acc.png
 losspred_vs_auc.png
 losspred_vs_f1.png
 losspred_vs_metrics.png
+
+heapmap_between_losspred_metrics.png
+
 top_10_comparison.png
 worst_10_comparison.png
 ```
 
-These visualizations make it possible to inspect the relationship between:
-
-- Autoencoder reconstruction loss
-- Prediction loss
-- Sampling behavior
-- Classification metrics
-- Training dynamics
+These analyses provide complementary views of training dynamics, prediction behavior, metric relationships, and sample-level performance.
 
 ---
 
-# 🔬 Reset Dynamics Simulation
+## Theoretical Analysis
 
-The repository additionally contains a dedicated simulation study for analyzing the effect of periodic autoencoder resets.
+The repository also contains a separate stochastic simulation for studying the effect of autoencoder resets on reward variability.
+
+The simulation is located at:
+
+```text
+reset-ae-simulation/
+```
+
+The reset process is modeled using a Bernoulli indicator:
+
+\[
+I_t\sim\operatorname{Bernoulli}(p)
+\]
+
+and the autoencoder state is represented as:
+
+\[
+\theta_t^+
+=
+(1-I_t)\theta_t+I_tZ_t
+\]
+
+where \(Z_t\) represents a newly initialized state.
+
+The reset-induced reward shock is defined as:
+
+\[
+D_t=R(Z_t)-R(\theta_t)
+\]
+
+leading to:
+
+\[
+R_t^{reset}
+=
+R(\theta_t)+I_tD_t
+\]
+
+Under the corresponding assumptions, the variance of the reset contribution is:
+
+\[
+\operatorname{Var}(I_tD_t)
+=
+p\sigma_D^2+p(1-p)\mu_D^2
+\]
+
+and in the zero-mean case:
+
+\[
+\operatorname{Var}(I_tD_t)
+=
+p\sigma_D^2
+\]
+
+The complete variance decomposition is:
+
+\[
+\operatorname{Var}(R_t^{reset})
+=
+\operatorname{Var}(R_t)
+
+- \operatorname{Var}(I_tD_t)
+- 2\operatorname{Cov}(R_t,I_tD_t)
+  \]
+
+The simulation is intended as a statistical abstraction of the reset mechanism rather than a replacement for the complete neural training process.
+
+---
+
+## Reset-AE Simulation Structure
 
 ```text
 reset-ae-simulation/
 ├── experiment.py
 ├── main.py
+│
 └── src/
     ├── config.py
     ├── generate_trajectory.py
@@ -379,35 +415,11 @@ reset-ae-simulation/
     └── print_results.py
 ```
 
-The simulation models reset events as stochastic events and studies their effect on reward variability.
-
-> **Important:** This module is a simplified stochastic abstraction of reset dynamics rather than a full neural-network training simulation.
-
-The theoretical component considers a reset indicator
-
-$$
-I_t \sim Bernoulli(p)
-$$
-
-and a reset-induced reward difference
-
-$$
-D_t = R(Z_t)-R(\theta_t).
-$$
-
-Under the stated assumptions, the variance contribution of the reset shock can be expressed as
-
-$$
-Var(I_tD_t)
-=
-p\sigma_D^2.
-$$
-
-The repository also includes numerical experiments for comparing simulated and theoretical behavior.
+The simulation separates trajectory generation, stochastic reset generation, empirical variance calculation, theoretical analysis, plotting, and reporting.
 
 ---
 
-# 🗂️ Repository Structure
+## Main Repository Structure
 
 ```text
 NBS/
@@ -424,8 +436,7 @@ NBS/
 │
 ├── Resultes/
 │   ├── Overall/
-│   ├── Senarioes/
-│   └── ...
+│   └── Senarioes/
 │
 ├── reset-ae-simulation/
 │   ├── experiment.py
@@ -439,231 +450,166 @@ NBS/
 │       ├── plot_results.py
 │       └── print_results.py
 │
-├── LICENSE
-└── README.md
+├── docs/
+│   ├── _config.yml
+│   ├── _layouts/
+│   │   └── default.html
+│   ├── assets/
+│   │   └── css/
+│   │       └── style.css
+│   ├── index.md
+│   ├── method.md
+│   ├── results.md
+│   ├── experiments.md
+│   ├── code.md
+│   └── theory.md
+│
+├── README.md
+└── LICENSE
 ```
 
 ---
 
-# ⚙️ Implementation Details
+## Main Implementation
 
-The current implementation is built with **PyTorch**.
-
-### Neural Batch Sampler
+The primary implementation is:
 
 ```text
-Input State
-    │
-    ▼
-Conv 6 → 16
-    │
-    ▼
-Conv 16 → 32
-    │
-    ▼
-Conv 32 → 32
-    │
-    ▼
-Conv 32 → 64
-    │
-    ▼
-Conv 64 → 64
-    │
-    ▼
-Flatten
-    │
-    ▼
-FC → 256
-    │
-    ▼
-FC → 9
-    │
-    ▼
-Softmax
+Code/Step6/main.py
 ```
 
-The policy produces a probability distribution over the nine spatial actions.
+It contains the main NBS training pipeline, including:
+
+- Image preprocessing
+- Data augmentation
+- Structural filtering
+- Autoencoder reconstruction
+- Reconstruction-error computation
+- State construction
+- Neural batch sampler
+- Action selection
+- Patch extraction
+- Anomaly prediction
+- Reward computation
+- Policy optimization
 
 ---
 
-# 🧪 Experimental Scope
+## Dataset Configuration
 
-The repository contains experiments involving industrial anomaly-detection scenarios covering both:
-
-### Objects
-
-Examples include scenarios such as:
-
-- Bottle
-- Cable
-- Capsule
-- Hazelnut
-- and other object categories
-
-### Textures
-
-Examples include:
-
-- Carpet
-- Grid
-- and other texture-oriented scenarios
-
-Scenario-specific results are organized under:
+The current implementation contains environment-specific paths for an MVTec bottle experiment:
 
 ```text
-Resultes/Senarioes/
+/content/content/MyDrive/MVTec/bottle/train/good
+/content/content/MyDrive/MVTec/bottle/test/good
+/content/content/MyDrive/MVTec/bottle/test
+/content/content/MyDrive/MVTec/bottle/ground_truth
 ```
+
+The autoencoder checkpoint is configured as:
+
+```text
+/content/content/MyDrive/MVTec/bottle/autoencoder.pth
+```
+
+These paths should be modified when running the code in another environment.
 
 ---
 
-# 🚀 Getting Started
+## Dependencies
 
-## 1. Clone the repository
+The principal Python dependencies include:
+
+```bash
+pip install torch torchvision numpy scipy matplotlib scikit-learn pillow
+```
+
+A compatible CUDA-enabled PyTorch installation can be used for GPU execution.
+
+---
+
+## Running the Project
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/amirhossein-khadivi/NBS.git
 cd NBS
 ```
 
-## 2. Install dependencies
-
-The main implementation is based on Python and PyTorch.
-
-A typical environment can be prepared with:
-
-```bash
-pip install torch torchvision numpy matplotlib scikit-learn opencv-python pillow
-```
-
-Depending on the exact experiment, additional dependencies may be required.
-
-## 3. Configure the dataset
-
-The current implementation contains dataset paths configured for the MVTec-style experimental setup.
-
-Before running the code, update the paths in:
+The main implementation is located at:
 
 ```text
 Code/Step6/main.py
 ```
 
-to match your local dataset and model locations.
-
-## 4. Run the main implementation
-
-```bash
-python Code/Step6/main.py
-```
+Before running the implementation, configure the dataset and checkpoint paths according to the local environment.
 
 ---
 
-# 🔁 Reproducibility
+## Reproducibility
 
-For reproducible experiments, the repository provides explicit configuration for the reset-dynamics simulation, including:
+For reproducible experiments, the following factors should be kept consistent:
 
-```python
-T = 1000
-K = 50
-n_trajectories = 100
-learning_rate = 0.005
-ae_noise_std = 0.01
-predictor_noise_std = 0.01
-beta = 0.8
-seed = 42
-```
+- Dataset version
+- Dataset preprocessing
+- Data augmentation
+- Model architecture
+- Training configuration
+- Random seeds
+- Autoencoder checkpoint
+- Evaluation procedure
+- Hardware environment
 
-The simulation configuration can be modified through:
-
-```text
-reset-ae-simulation/src/config.py
-```
+The repository separates implementation code, experimental outputs, diagrams, simulation code, and documentation to make the experimental workflow easier to inspect and reproduce.
 
 ---
 
-# 📚 Research Components
+## Documentation
 
-| Component            | Role                                     |
-| -------------------- | ---------------------------------------- |
-| Autoencoder          | Reconstruction-based anomaly information |
-| Structural filtering | Extract local image structure            |
-| Neural Batch Sampler | Select informative image patches         |
-| RL policy            | Learn sequential sampling decisions      |
-| Coverage reward      | Encourage exploration                    |
-| Predictor            | Provide downstream feedback              |
-| Reward function      | Optimize the sampling strategy           |
-| Simulation module    | Study reset-induced stochastic effects   |
+The project website provides a structured description of the framework:
 
----
-
-# 🧠 Conceptual Contribution
-
-The central idea behind NBS is to shift patch selection from a **static preprocessing operation** toward a **learned sequential decision process**.
-
-Instead of asking:
-
-> _Which patches should be sampled beforehand?_
-
-the framework asks:
-
-> _Given what has already been observed, where should the agent look next?_
-
-This formulation makes the sampling strategy adaptive to the visual information encountered during exploration.
+| Section     | Description                                  |
+| ----------- | -------------------------------------------- |
+| Overview    | Research motivation and project summary      |
+| Method      | NBS architecture, state, actions, and reward |
+| Results     | Aggregated and scenario-level results        |
+| Experiments | Experimental organization and simulation     |
+| Code        | Implementation and repository structure      |
+| Theory      | Mathematical analysis of stochastic resets   |
 
 ---
 
-# 📁 Results and Visualizations
+## Citation
 
-All generated figures are organized inside the `Resultes/` directory.
-
-The repository includes:
-
-- Overall metric distributions
-- Object-level analysis
-- Texture-level analysis
-- Scenario-level training curves
-- Loss/metric relationships
-- Top-performing samples
-- Worst-performing samples
-- Autoencoder dynamics
-- Prediction dynamics
-- Reset simulation results
-
-This structure is intended to make the experimental analysis directly inspectable from the repository.
-
----
-
-# 📖 Citation
-
-If you use this repository or the Neural Batch Sampling framework in your research, please cite the associated work:
+If you use this implementation, methodology, or experimental materials in your research, please cite the corresponding research work.
 
 ```bibtex
 @misc{khadivi_nbs,
-  title  = {Neural Batch Sampling with Reinforcement Learning for Semi-Supervised Anomaly Detection},
-  author = {Amirhossein Khadivi Noghredeh},
-  note   = {Research implementation},
+  title  = {Neural Batch Sampling with Reinforcement Learning for Semi-Supervised Industrial Anomaly Detection},
+  author = {Amirhossein Khadivi},
+  year   = {2026}
 }
 ```
 
 ---
 
-# 📄 License
+## License
 
-This project is distributed under the license provided in:
-
-```text
-LICENSE
-```
+See the `LICENSE` file for the licensing terms of this repository.
 
 ---
 
-<div align="center">
+## Contact
 
-### Neural Batch Sampling
+For questions regarding the implementation, experiments, or research framework, please open an issue in the repository.
 
-**Learning where to look for industrial anomalies.**
+---
 
-<br>
+## Repository
 
-[GitHub Repository](https://github.com/amirhossein-khadivi/NBS)
+**GitHub:**  
+https://github.com/amirhossein-khadivi/NBS
 
-</div>
+**Project Website:**  
+https://amirhossein-khadivi.github.io/NBS/
