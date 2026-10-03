@@ -676,3 +676,27 @@ li {
     margin-top: 60px;
   }
 }
+.profile-header {
+  text-align: center;
+  margin: 2rem 0 3rem;
+}
+
+.profile-photo {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 1.25rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.profile-header h1 {
+  margin: 0;
+}
+
+.profile-role {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
