@@ -4,83 +4,34 @@
 
 Neural Batch Sampling (NBS) is a reinforcement-learning-based framework for intelligent spatial sampling in industrial image anomaly detection.
 
-Instead of processing image regions uniformly, NBS learns a sequential sampling policy that navigates through an image and selects informative patches using visual, structural, and reconstruction-related information.
+Instead of processing image regions uniformly, NBS learns a sequential sampling policy to identify informative image patches using visual, structural, and reconstruction-related information.
 
 ---
 
 ## Project Website
 
-The complete research presentation, including the methodology, experimental results, theoretical analysis, and implementation details, is available on the project website:
+The complete research presentation, including the methodology, results, experiments, implementation details, and theoretical analysis, is available on the project website:
 
 ### [NBS Research Website](https://amirhossein-khadivi.github.io/NBS/)
-
-The website includes:
-
-- **Overview** — Project motivation and framework summary
-- **Method** — NBS architecture, state representation, action space, and reward
-- **Results** — Overall, object-level, texture-level, and scenario-level results
-- **Experiments** — Experimental organization and reset simulation
-- **Code** — Implementation details and repository structure
-- **Theory** — Mathematical analysis of stochastic autoencoder resets
 
 ---
 
 ## Framework Overview
 
-The general NBS pipeline is:
+<p align="center">
+  <img src="Diagrams/overview_flowchart.jpg" alt="NBS Framework Overview" width="850">
+</p>
 
-```text
-Input Image
-     │
-     ▼
-Preprocessing
-     │
-     ▼
-Autoencoder Reconstruction
-     │
-     ▼
-State Construction
-     │
-     ▼
-Neural Batch Sampler
-     │
-     ▼
-Action Selection
-     │
-     ▼
-Patch Extraction
-     │
-     ▼
-Anomaly Prediction
-     │
-     ▼
-Reward
-     │
-     ▼
-Policy Update
-     │
-     └──────────────► Next Sampling Step
-```
-
-The sampling agent learns which spatial regions are informative for anomaly detection through sequential interaction with the image and reward-driven policy optimization.
+NBS combines image reconstruction, sequential patch sampling, anomaly prediction, and reinforcement learning into an integrated sampling framework.
 
 ---
 
 ## Main Components
 
-The current implementation contains:
-
-- Neural Batch Sampler
-- Autoencoder-based reconstruction
-- Reconstruction-error analysis
-- Structural image information
-- Anomaly prediction network
-- Reinforcement-learning-based spatial sampling
-- Composite reward formulation
-- Scenario-level experimental analysis
-- Reset-AE stochastic simulation
-
-Detailed descriptions of these components are provided on the [project website](https://amirhossein-khadivi.github.io/NBS/).
+- **Neural Batch Sampler** — learns a sequential spatial sampling policy.
+- **Autoencoder** — provides reconstruction-based information for state construction.
+- **Anomaly Predictor** — estimates anomaly-related information from sampled patches.
+- **Reinforcement Learning** — optimizes patch selection through a composite reward.
 
 ---
 
@@ -89,36 +40,11 @@ Detailed descriptions of these components are provided on the [project website](
 ```text
 NBS/
 │
-├── Code/
-│   └── Step6/
-│       └── main.py
-│
-├── Diagrams/
-│   ├── overview_flowchart.jpg
-│   ├── detail_flowchart.jpg
-│   ├── nbs_state_schematic.jpg
-│   └── image3.jpg
-│
-├── Resultes/
-│   ├── Overall/
-│   └── Senarioes/
-│
-├── reset-ae-simulation/
-│   ├── experiment.py
-│   ├── main.py
-│   └── src/
-│
-├── docs/
-│   ├── _config.yml
-│   ├── _layouts/
-│   ├── assets/
-│   ├── index.md
-│   ├── method.md
-│   ├── results.md
-│   ├── experiments.md
-│   ├── code.md
-│   └── theory.md
-│
+├── Code/                  # Main implementation
+├── Diagrams/              # Framework and architecture diagrams
+├── Resultes/              # Experimental results
+├── reset-ae-simulation/   # Stochastic reset simulation
+├── docs/                  # GitHub Pages website
 ├── README.md
 └── LICENSE
 ```
@@ -127,72 +53,33 @@ NBS/
 
 ## Code
 
-The main implementation is located at:
+The main implementation is available in:
 
 ```text
 Code/Step6/main.py
 ```
 
-The repository also contains the separate stochastic reset simulation under:
-
-```text
-reset-ae-simulation/
-```
-
-For implementation details and instructions, see the [Code section of the project website](https://amirhossein-khadivi.github.io/NBS/code/).
+Detailed implementation information is available in the [Code section](https://amirhossein-khadivi.github.io/NBS/code/) of the project website.
 
 ---
 
 ## Experiments
 
-Experimental results are organized at several levels:
+The repository contains overall, object-level, texture-level, and scenario-level experimental results, together with training-dynamics and stochastic reset analyses.
 
-- Overall performance
-- Object-oriented scenarios
-- Texture-oriented scenarios
-- Individual industrial scenarios
-- Training dynamics
-- Loss–metric relationships
-- Sample-level analysis
-- Reset-AE simulation
-
-Detailed figures and analyses are available in the [Results](https://amirhossein-khadivi.github.io/NBS/results/) and [Experiments](https://amirhossein-khadivi.github.io/NBS/experiments/) sections of the website.
+See the [Results](https://amirhossein-khadivi.github.io/NBS/results/) and [Experiments](https://amirhossein-khadivi.github.io/NBS/experiments/) pages for details.
 
 ---
 
 ## Theoretical Analysis
 
-A separate stochastic simulation investigates the effect of autoencoder resets on reward variability.
+The repository includes a stochastic simulation for analyzing the effect of autoencoder resets on reward variability.
 
-The theoretical formulation models the reset process as:
-
-\[
-\theta_t^+
-=
-(1-I_t)\theta_t+I_tZ_t
-\]
-
-with
-
-\[
-I_t\sim\operatorname{Bernoulli}(p)
-\]
-
-The resulting reward-shock formulation and variance analysis are described in detail on the [Theory page](https://amirhossein-khadivi.github.io/NBS/theory/).
+The complete mathematical formulation is provided in the [Theory](https://amirhossein-khadivi.github.io/NBS/theory/) section of the project website.
 
 ---
 
 ## Citation
-
-If you use this implementation or research framework, please cite the corresponding work:
-
-```bibtex
-@misc{khadivi_nbs,
-  title  = {Neural Batch Sampling with Reinforcement Learning for Semi-Supervised Industrial Anomaly Detection},
-  author = {Amirhossein Khadivi},
-  year   = {2026}
-}
-```
 
 ---
 
